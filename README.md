@@ -17,8 +17,8 @@ A minimal AWS Lambda function that creates one fake commit per weekday at 5:15 P
 
 2. Clone or download this project:
    ```
-   git clone <this-repo-url>
-   cd weekday-commit-lambda
+   git clone https://github.com/kiinoda/job_getter
+   cd job_getter
    ```
 
 3. Install Serverless Framework if you haven't already:
