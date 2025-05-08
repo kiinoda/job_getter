@@ -1,0 +1,9 @@
+# Serverless directories
+.serverless
+node_modules
+package.json
+package-lock.json
+
+# Lambda script
+/bootstrap
+
