@@ -8,7 +8,7 @@ set -euo pipefail
 # Install git if not already available
 if ! command -v git &> /dev/null; then
     echo "Installing git..."
-    yum install -y git
+    dnf install -y git
 fi
 
 # Set up private key permissions
