@@ -23,7 +23,7 @@ A minimal AWS Lambda function that creates one fake commit per weekday at 5:15 P
 
 3. Install Serverless Framework if you haven't already:
    ```
-   npm install -g serverless
+   npm install serverless
    ```
 
 4. Edit `serverless.yml` to update the hardcoded values:
