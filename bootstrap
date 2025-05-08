@@ -6,8 +6,9 @@ set -euo pipefail
 # SEE: https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html
 
 # Set up private key permissions
-chmod 600 /var/task/id_ed25519
-export GIT_SSH_COMMAND="ssh -i /var/task/id_ed25519 -o StrictHostKeyChecking=no"
+cp /var/task/id_ed25519 /tmp/id_ed25519
+chmod 600 /tmp/id_ed25519
+export GIT_SSH_COMMAND="ssh -i /tmp/id_ed25519 -o StrictHostKeyChecking=no"
 
 function handler () {
     EVENT_DATA="$1"
