@@ -17,7 +17,7 @@ package:
 functions:
   fakeCommit:
     handler: bootstrap
-    runtime: provided.al2
+    runtime: provided.al2023
     timeout: 30
     events:
       # Run every weekday at 5:15pm UTC
