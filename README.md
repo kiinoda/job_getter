@@ -46,7 +46,7 @@ A minimal AWS Lambda function that creates one fake commit per weekday at 5:15 P
 
 6. Deploy the Lambda function:
    ```
-   serverless deploy
+   npx sls deploy
    ```
 
 ## How It Works
