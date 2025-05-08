@@ -8,6 +8,11 @@ provider:
     GIT_COMMITTER_NAME: "Fake Committer"
     GIT_COMMITTER_EMAIL: "your-email@example.com"  # Change this to your email
     REPO_URL: "git@github.com:username/fake-commits.git"  # Change this to your repo URL
+# Global packaging - exclude everything by default
+package:
+  individually: true
+  patterns:
+    - '!**/*'  # Exclude everything by default
 
 functions:
   fakeCommit:
