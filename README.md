@@ -1,12 +1,16 @@
-# Simple Weekday Commit Lambda with Serverless
+# Easy Job Getter
 
-A minimal AWS Lambda function that creates one fake commit per weekday at 5:15 PM UTC. This solution uses the Serverless Framework for easy deployment.
+A minimal AWS Lambda function that creates up to five commits per weekday at 5:15 PM UTC. This solution uses the Serverless Framework and a standard Alpine container image for a lightweight deployment.
+
+NOTE: This as a joke, albeit one that uses real life DevOps skills. I want to mock influencers that say that you should have a visible Github profile with many contributions to hire you. But this can be faked. So let's create such a thing that uses AWS Lambda, Serverless, some bash scripting and patience. Up to five commits per day, every day! You got this!
 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) (for Serverless Framework)
 - [Serverless Framework](https://www.serverless.com/)
+- [Docker](https://www.docker.com/) installed and running
 - An AWS account with configured credentials
+- AWS CLI with access to create ECR repositories
 
 ## Setup
 
@@ -17,13 +21,13 @@ A minimal AWS Lambda function that creates one fake commit per weekday at 5:15 P
 
 2. Clone or download this project:
    ```
-   git clone https://github.com/kiinoda/job_getter
+   git clone git@github.com/kiinoda/job_getter
    cd job_getter
    ```
 
 3. Install Serverless Framework if you haven't already:
    ```
-   npm install serverless
+   npm install -g serverless
    ```
 
 4. Edit `serverless.yml` to update the hardcoded values:
@@ -46,19 +50,23 @@ A minimal AWS Lambda function that creates one fake commit per weekday at 5:15 P
 
 6. Deploy the Lambda function:
    ```
-   npx sls deploy
+   serverless deploy
    ```
+   
+   Note: The first deployment will create an ECR repository and upload a container image. This may take a few minutes.
 
 ## How It Works
 
-1. The Serverless Framework creates:
-   - An AWS Lambda function using the provided.al2 runtime
-   - An IAM role with necessary permissions
-   - A CloudWatch Events rule for scheduling
-   - Permissions for CloudWatch Events to invoke the Lambda
+1. The Serverless Framework:
+   - Creates an ECR repository for your container image
+   - Builds and pushes a standard Alpine-based Docker image (only ~25MB) with Git pre-installed
+   - Creates a Lambda function using the container image
+   - Sets up an IAM role with necessary permissions
+   - Creates a CloudWatch Events rule for scheduling
+   - Configures permissions for CloudWatch Events to invoke the Lambda
 
 2. The Lambda function is triggered every weekday at 5:15 PM UTC and:
-   - Installs Git if needed
+   - Uses the pre-installed Git in the Alpine container
    - Clones your repository
    - Creates a random text file
    - Commits and pushes the changes
@@ -97,14 +105,19 @@ Common examples:
 
 ## Testing Locally
 
-You can test the bootstrap script locally before deploying:
+You can test the bootstrap script locally using Docker:
 
 ```bash
-# Create a mock event file
-echo '{"source":"aws.events","detail-type":"Scheduled Event"}' > event.json
+# Build the Docker image
+docker build -t fake-commit-lambda .
 
-# Test the script
-./bootstrap invoke "$(cat event.json)"
+# Run the container with your environment variables
+docker run -it --rm \
+  -e GIT_COMMITTER_NAME="Fake Committer" \
+  -e GIT_COMMITTER_EMAIL="your-email@example.com" \
+  -e REPO_URL="git@github.com:username/fake-commits.git" \
+  fake-commit-lambda \
+  invoke '{"source":"aws.events","detail-type":"Scheduled Event"}'
 ```
 
 ## Deployment Commands

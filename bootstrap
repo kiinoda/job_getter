@@ -5,48 +5,56 @@ set -euo pipefail
 # Setup for AWS Lambda
 # SEE: https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html
 
-# Set up private key permissions
-cp /var/task/id_ed25519 /tmp/id_ed25519
-chmod 600 /tmp/id_ed25519
-export GIT_SSH_COMMAND="ssh -i /tmp/id_ed25519 -o StrictHostKeyChecking=no"
+# debugging (you can uncomment if you want to look under the hood)
+# echo "Running as: $(id)"
+# echo "Whoami: $(whoami)"
+# echo "Passwd: $(grep $(whoami) /etc/passwd)"
 
 function handler () {
     EVENT_DATA="$1"
-    
+
     # Process the event
     echo "Processing event: $EVENT_DATA"
-    
+
     # Create a temporary directory to work in
     TEMP_DIR=$(mktemp -d)
     cd $TEMP_DIR
-    
+
     echo "Working in temporary directory: $TEMP_DIR"
-    
+
+    echo "Copying SSH key to set proper access rights"
+    cp $LAMBDA_RUNTIME_DIR/id_ed25519 $TEMP_DIR/
+    chmod 600 $TEMP_DIR/id_ed25519
+    export GIT_SSH_COMMAND="ssh -i $TEMP_DIR/id_ed25519 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
     # Clone the repository
     echo "Cloning repository: $REPO_URL"
     git clone $REPO_URL repo
     cd repo
-    
-    # Generate a random change
-    TIMESTAMP=$(date +%s)
-    RANDOM_FILE="fake-commit-$TIMESTAMP.txt"
-    echo "Creating random file: $RANDOM_FILE"
-    echo "This is a fake commit created at $(date)" > $RANDOM_FILE
-    
-    # Add, commit and push the change
-    git add $RANDOM_FILE
-    git config --local user.name "$GIT_COMMITTER_NAME"
-    git config --local user.email "$GIT_COMMITTER_EMAIL"
-    COMMIT_MSG="Daily update ($(date))"
-    git commit -m "$COMMIT_MSG"
-    git push origin HEAD
-    
-    echo "Fake commit pushed successfully"
-    
+
+
+    for i in $(seq 0 $(($RANDOM % 5))); do
+        # Generate a random change
+        TIMESTAMP=$(date +%s)
+        RANDOM_FILE="fake-commit-$TIMESTAMP.txt"
+        echo "Creating random file: $RANDOM_FILE"
+        echo "This is a fake commit created at $(date)" > $RANDOM_FILE
+        
+        # Add, commit and push the change
+        git add $RANDOM_FILE
+        git config --local user.name "$GIT_COMMITTER_NAME"
+        git config --local user.email "$GIT_COMMITTER_EMAIL"
+        COMMIT_MSG="Daily update ($(date))"
+        git commit -m "$COMMIT_MSG"
+        git push origin HEAD
+
+        echo "Fake commit pushed successfully"
+    done
+
     # Clean up
     cd /tmp
     rm -rf $TEMP_DIR
-    
+
     # Return response
     echo "{ \"statusCode\": 200, \"body\": \"Fake commit created successfully at $(date)\" }"
 }
@@ -57,6 +65,12 @@ if [ "$#" -ge 1 ] && [ "$1" == "invoke" ]; then
     handler "${2:-{}}"
 else
     # Lambda runtime invocation
+    if [ -z "${AWS_LAMBDA_RUNTIME_API:-}" ]; then
+        echo "Error: AWS_LAMBDA_RUNTIME_API environment variable is not set"
+        exit 1
+    fi
+    
+    # Lambda runtime loop
     while true; do
         # Get an event
         HEADERS="$(mktemp)"

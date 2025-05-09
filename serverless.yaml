@@ -2,27 +2,25 @@ service: bash-fake-commit-lambda
 
 provider:
   name: aws
-  region: us-east-1
-  environment:
-    # IMPORTANT: Update these values before deployment
-    GIT_COMMITTER_NAME: "Fake Committer"
-    GIT_COMMITTER_EMAIL: "your-email@example.com"  # Change this to your email
-    REPO_URL: "git@github.com:username/fake-commits.git"  # Change this to your repo URL
-# Global packaging - exclude everything by default
-package:
-  individually: true
-  patterns:
-    - '!**/*'  # Exclude everything by default
+  region: eu-west-1
+  ecr:
+    images:
+      fake_commit_image:
+        path: ./
 
 functions:
   fakeCommit:
-    handler: bootstrap
-    runtime: provided.al2023
+    image:
+      name: fake_commit_image
+      command:
+        - bootstrap
+    environment:
+      # IMPORTANT: Update these values before deployment
+      GIT_COMMITTER_NAME: "Fake Committer"
+      GIT_COMMITTER_EMAIL: "kii@i8.io"  # Change this to your email
+      REPO_URL: "git@github.com:kiinoda/fake-commits.git"  # Change this to your repo URL
     timeout: 30
     events:
       # Run every weekday at 5:15pm UTC
-      - schedule: cron(15 17 ? * MON-FRI *)
-    package:
-      include:
-        - bootstrap
-        - id_ed25519
+      - schedule: cron(17 15 ? * MON-FRI *)
+
