@@ -33,7 +33,8 @@ function handler () {
     cd repo
 
 
-    for i in $(seq 0 $(($RANDOM % 5))); do
+    # allow some days to have 0 commits; so let's start sequence from 1 
+    for i in $(seq 1 $(($RANDOM % 5))); do
         # Generate a random change
         TIMESTAMP=$(date +%s)
         RANDOM_FILE="fake-commit-$TIMESTAMP.txt"
